@@ -13,16 +13,22 @@ while True:
     if not success:
         break
 
+    height, width, channels = frame.shape
+    print(f"Width: {width}, Height: {height},  Channels: {channels}")
+
+    x1 = width // 4
+    y1 = height // 4
+
+    x2 = 3 * width // 4
+    y2 = 3 * height // 4
+
+    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
     cv2.imshow("Trackpilot", frame)
     key = cv2.waitKey(1)
 
     if key == ord('q'):
         break
-
-if not success:
-    raise RuntimeError("The video opened but could not be read")
-
-print(f"Frame shape: {frame.shape}")
 
 video.release()
 cv2.destroyAllWindows
