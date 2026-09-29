@@ -1,11 +1,14 @@
 import cv2
+from ultralytics import YOLO
 
-video_path = "videos/input/people.mp4"
+video_path = "videos/input/people.mov"
 
 video = cv2.VideoCapture(video_path)
 
 if not video.isOpened():
     raise FileNotFoundError(f"Could not open the video: {video_path}")
+
+model = YOLO("yolo11n.pt")
 
 while True:
     success, frame = video.read()
@@ -13,16 +16,18 @@ while True:
     if not success:
         break
 
-    height, width, channels = frame.shape
-    print(f"Width: {width}, Height: {height},  Channels: {channels}")
+    results = model.predict(frame, classes=[0], conf=0.4, verbose=False)
 
-    x1 = width // 4
-    y1 = height // 4
+    result = results[0]
 
-    x2 = 3 * width // 4
-    y2 = 3 * height // 4
+    for box in result.boxes:
+        coordinates = box.xyxy[0].tolist()
+        confidence = float(box.conf[0])
+        x1, y1, x2, y2 = map(int, coordinates)
 
-    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+        cv2.putText(frame, f"Person: {confidence:.2f}", (x1, max(y1-10, 20)), cv2.FONT_HERSHEY_COMPLEX, 0.6, (0, 255, 0), 2)
 
     cv2.imshow("Trackpilot", frame)
     key = cv2.waitKey(1)
