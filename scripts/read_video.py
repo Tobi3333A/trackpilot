@@ -30,13 +30,26 @@ while True:
 
     results = model.track(frame, persist=True, tracker="bytetrack.yaml", classes=[0], conf=0.25, verbose=False)
 
+    # print(type(results))
+    # print(len(results))
+    
     result = results[0]
+
+    # print(result)
+    # print(result.orig_shape)
+    # print(result.names)
+    # print(f"Boxes: {result.boxes}\n\n")
+    # print(f"Boxes Length: {len(result.boxes)}\n\n")
 
     for box in result.boxes:
         if box.id is None:
             continue
 
         track_id = int(box.id[0])
+
+        # print(f"Box: {box}")
+        # print(f"Box id: {box.id}")
+        # print(f"Track id: {track_id}\n\n")
 
         if target_id is None:
             target_id = track_id
@@ -72,16 +85,16 @@ while True:
 
         cv2.putText(frame, label, (x1, max(y1-10, 20)), cv2.FONT_HERSHEY_COMPLEX, 0.6, color, 2)
 
-        if target_id is None:
-            state = 'Searching'
-        elif target_found:
-            state = 'Tracking'
-        else:
-            state = 'Target Lost'
+    if target_id is None:
+        state = 'Searching'
+    elif target_found:
+        state = 'Tracking'
+    else:
+        state = 'Target Lost'
 
-        state_color = (0, 255, 0) if state == 'Tracking' else (0, 0, 255)
+    state_color = (0, 255, 0) if state == 'Tracking' else (0, 0, 255)
 
-        cv2.putText(frame, f"State: {state}", (20, 40), cv2.FONT_HERSHEY_COMPLEX, 0.8, state_color, 2)
+    cv2.putText(frame, f"State: {state}", (20, 40), cv2.FONT_HERSHEY_COMPLEX, 0.8, state_color, 2)
 
     if state == 'Tracking':
         cv2.putText(frame, f"Target size: {target_area_ratio:.3f}", (20, 110), cv2.FONT_HERSHEY_COMPLEX, 0.8, (255, 255, 0), 2)
