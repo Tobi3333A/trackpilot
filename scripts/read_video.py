@@ -19,6 +19,9 @@ model = YOLO("yolo11n.pt")
 
 target_id = None
 
+tracked_frames = 0
+lost_frames = 0
+
 while True:
     frame_start = time.perf_counter()
 
@@ -110,6 +113,8 @@ while True:
     cv2.putText(frame, f"State: {state}", (20, 40), cv2.FONT_HERSHEY_COMPLEX, 0.8, state_color, 2)
 
     if state == 'Tracking':
+        tracked_frames += 1
+
         cv2.putText(frame, f"Target size: {target_area_ratio:.3f}", (20, 110), cv2.FONT_HERSHEY_COMPLEX, 0.8, (255, 255, 0), 2)
 
         frame_center_x = frame_width // 2
@@ -158,6 +163,8 @@ while True:
         cv2.line(frame, (frame_center_x, frame_center_y), target_center, (255, 255, 0), 2)
 
         cv2.putText(frame, f"Command: {command} ({yaw_command:.2f})", (20, 75), cv2.FONT_HERSHEY_COMPLEX, 0.8, (255, 255, 0), 2)
+    elif state == 'Target Lost':
+        lost_frames += 1
 
     cv2.imshow("Trackpilot", frame)
     key = cv2.waitKey(1)
@@ -172,13 +179,21 @@ while True:
 
 if pipeline_times:
     total_frame_time = sum(pipeline_times)
+    # print(f"Number of pipeline times: {len(pipeline_times)}")
     avg_frame_fps = len(pipeline_times) / total_frame_time
     print(f"Average Frame FPS: {avg_frame_fps}")
 
 if track_times:
     total_track_time = sum(track_times)
+    # print(f"Number of track times: {len(track_times)}")
     avg_track_fps = len(track_times) / total_track_time
     print(f"Average YOLO + ByteTrack FPS: {avg_track_fps}")
+
+total_frames = tracked_frames + lost_frames
+print(f"Total frames: {total_frames}")
+if total_frames > 0:
+    tracking_success_rate = (tracked_frames / total_frames) * 100
+    print(f"Tracking success rate: {tracking_success_rate:.2f}%")
 
 video.release()
 cv2.destroyAllWindows()
