@@ -1,5 +1,6 @@
 import cv2
 from ultralytics import YOLO
+import time
 
 video_path = "videos/input/people.mov"
 
@@ -8,11 +9,19 @@ video = cv2.VideoCapture(video_path)
 if not video.isOpened():
     raise FileNotFoundError(f"Could not open the video: {video_path}")
 
+source_fps = video.get(cv2.CAP_PROP_FPS)
+print(f"Source FPS: {source_fps:.2f}")
+
+pipeline_times = []
+track_times = []
+
 model = YOLO("yolo11n.pt")
 
 target_id = None
 
 while True:
+    frame_start = time.perf_counter()
+
     success, frame = video.read()
 
     if not success:
@@ -28,7 +37,11 @@ while True:
     forward_command = 0.0
     distance_command = 'Stop'
 
+    track_time_start = time.perf_counter()
     results = model.track(frame, persist=True, tracker="bytetrack.yaml", classes=[0], conf=0.25, verbose=False)
+    track_time_end = time.perf_counter()
+    track_time = track_time_end - track_time_start
+    track_times.append(track_time)
 
     # print(type(results))
     # print(len(results))
@@ -149,8 +162,23 @@ while True:
     cv2.imshow("Trackpilot", frame)
     key = cv2.waitKey(1)
 
+    frame_end = time.perf_counter()
+    pipeline_time = frame_end - frame_start
+    pipeline_times.append(pipeline_time)
+    
+
     if key == ord('q'):
         break
+
+if pipeline_times:
+    total_frame_time = sum(pipeline_times)
+    avg_frame_fps = len(pipeline_times) / total_frame_time
+    print(f"Average Frame FPS: {avg_frame_fps}")
+
+if track_times:
+    total_track_time = sum(track_times)
+    avg_track_fps = len(track_times) / total_track_time
+    print(f"Average YOLO + ByteTrack FPS: {avg_track_fps}")
 
 video.release()
 cv2.destroyAllWindows()
