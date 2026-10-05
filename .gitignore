@@ -5,3 +5,4 @@ videos/input/*
 videos/output/*
 !videos/input/.gitkeep
 !videos/output/.gitkeep 
+*.pt
