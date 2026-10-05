@@ -7,6 +7,15 @@ class Pipeline:
         self.model = YOLO(model_path)
         self.target_id = None
 
+        self.confidence_threshold = 0.25
+
+        self.yaw_deadband = 0.05
+        self.yaw_kp = 0.8
+
+        self.desired_area_ratio = 0.12
+        self.distance_deadband = 0.01
+        self.distance_kp = 3.0
+
     def process_frame(self, frame, metrics):
         target_found = False
         target_center = None
@@ -20,7 +29,7 @@ class Pipeline:
 
         track_time_start = time.perf_counter()
         
-        results = self.model.track(frame, persist=True, tracker="bytetrack.yaml", classes=[0], conf=0.25, verbose=False)
+        results = self.model.track(frame, persist=True, tracker="bytetrack.yaml", classes=[0], conf=self.confidence_threshold, verbose=False)
     
         track_time_end = time.perf_counter()
         track_time = track_time_end - track_time_start
@@ -34,10 +43,6 @@ class Pipeline:
                 continue
     
             track_id = int(box.id[0])
-    
-            # print(f"Box: {box}")
-            # print(f"Box id: {box.id}")
-            # print(f"Track id: {track_id}\n\n")
     
             if self.target_id is None:
                 self.target_id = track_id
@@ -97,14 +102,11 @@ class Pipeline:
             error_x = target_center_x - frame_center_x
             normalized_error_x = error_x / (frame_width / 2)
     
-            deadband = 0.05
-            kp = 0.8
-    
-            if abs(normalized_error_x) <= deadband:
+            if abs(normalized_error_x) <= self.yaw_deadband:
                 yaw_command = 0.0
                 command = 'Hold'
             else:
-                yaw_command = kp * normalized_error_x
+                yaw_command = self.yaw_kp * normalized_error_x
                 yaw_command = max(-1.0, min(1.0, yaw_command))
     
                 if yaw_command < 0:
@@ -112,17 +114,13 @@ class Pipeline:
                 else:
                     command = 'Yaw Right'
     
-            desired_area_ratio = 0.12
-            distance_deadband = 0.01
-            kp_distance = 3.0
+            distance_error = self.desired_area_ratio - target_area_ratio
     
-            distance_error = desired_area_ratio - target_area_ratio
-    
-            if abs(distance_error) <= distance_deadband:
+            if abs(distance_error) <= self.distance_deadband:
                 forward_command = 0.0
                 distance_command = 'Hold distance'
             else:
-                forward_command = kp_distance * distance_error
+                forward_command = self.distance_kp * distance_error
                 forward_command = max(-1.0, min(1.0, forward_command))
     
                 if forward_command > 0:
