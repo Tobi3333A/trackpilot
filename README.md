@@ -112,7 +112,7 @@ pip install -r requirements.txt
 Then run:
 
 ```bash
-python scripts/read_video.py
+PYTHONPATH=src python scripts/read_video.py
 ```
 
 The input video is:
