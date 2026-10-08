@@ -3,5 +3,5 @@ __pycache__/
 *.pyc
 videos/input/*
 !videos/input/.gitkeep
-!videos/output/.gitkeep 
 *.pt
+*.egg-info/

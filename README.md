@@ -90,29 +90,27 @@ trackpilot/
 │       ├── metrics.py
 │       └── pipeline.py
 ├── videos/
-│   ├── input/
-│   │   ├── .gitkeep
-│   │   └── people.mov
-│   └── output/
-│       └── .gitkeep
+│   └── input/
+│       ├── .gitkeep
+│       └── people.mov
 ├── .gitignore
-├── requirements.txt
+├── pyproject.toml
 ├── yolo11n.pt
 └── README.md
 ```
 
 ## Running
 
-Install the dependencies:
+Install trackpilot and its dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
 Then run:
 
 ```bash
-PYTHONPATH=src python scripts/read_video.py
+python scripts/read_video.py
 ```
 
 The input video is:
