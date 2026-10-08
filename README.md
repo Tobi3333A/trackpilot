@@ -99,15 +99,32 @@ trackpilot/
 └── README.md
 ```
 
-## Running
+## Setup
+Clone the repository:
 
+```bash
+git clone https://github.com/Tobi3333A/trackpilot.git
+cd trackpilot
+```
+Create and activate a virtual environment:
+### Linux / macOS
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+### Windows
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
 Install trackpilot and its dependencies:
 
 ```bash
 pip install -e .
 ```
 
-Then run:
+## Running
+After completing the setup, run:
 
 ```bash
 python scripts/read_video.py
